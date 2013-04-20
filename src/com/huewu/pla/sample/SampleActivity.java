@@ -14,8 +14,6 @@ import android.widget.TextView;
 
 import com.huewu.pla.lib.MultiColumnListView;
 import com.huewu.pla.lib.internal.PLA_AbsListView.LayoutParams;
-import com.huewu.pla.sample.extra.PullToRefreshSampleActivity;
-import com.huewu.pla.smaple.R;
 
 public class SampleActivity extends Activity {
 

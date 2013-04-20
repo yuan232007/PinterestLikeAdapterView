@@ -23,46 +23,46 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.huewu.pla.lib.MultiColumnListView;
-import com.huewu.pla.smaple.R;
+import com.huewu.pla.sample.R;
 
 /**
- * A generic, customizable Android ListView implementation that has 'Pull to Refresh' functionality.
+ * A generic, customizable Android ListView implementation that has 'Pull to
+ * Refresh' functionality.
  * <p/>
- * This ListView can be used in place of the normal Android android.widget.ListView class.
+ * This ListView can be used in place of the normal Android
+ * android.widget.ListView class.
  * <p/>
- * Users of this class should implement OnRefreshListener and call setOnRefreshListener(..)
- * to get notified on refresh events. The using class should call onRefreshComplete() when
- * refreshing is finished.
+ * Users of this class should implement OnRefreshListener and call
+ * setOnRefreshListener(..) to get notified on refresh events. The using class
+ * should call onRefreshComplete() when refreshing is finished.
  * <p/>
- * The using class can call setRefreshing() to set the state explicitly to refreshing. This
- * is useful when you want to show the spinner and 'Refreshing' text when the
- * refresh was not triggered by 'Pull to Refresh', for example on start.
+ * The using class can call setRefreshing() to set the state explicitly to
+ * refreshing. This is useful when you want to show the spinner and 'Refreshing'
+ * text when the refresh was not triggered by 'Pull to Refresh', for example on
+ * start.
  * <p/>
  * For more information, visit the project page:
  * https://github.com/erikwt/PullToRefresh-ListView
- *
+ * 
  * @author Erik Wallentinsen <dev+ptr@erikw.eu>
  * @version 1.0.0
  */
 public class MultiColumnPullToRefreshListView extends MultiColumnListView {
 
-	private static final float PULL_RESISTANCE                 = 1.7f;
-	private static final int   BOUNCE_ANIMATION_DURATION       = 200;
-	private static final int   BOUNCE_ANIMATION_DELAY          = 0;
-	private static final int   ROTATE_ARROW_ANIMATION_DURATION = 250;
+	private static final float PULL_RESISTANCE = 1.7f;
+	private static final int BOUNCE_ANIMATION_DURATION = 200;
+	private static final int BOUNCE_ANIMATION_DELAY = 0;
+	private static final int ROTATE_ARROW_ANIMATION_DURATION = 250;
 
-	private static enum State{
-		PULL_TO_REFRESH,
-		RELEASE_TO_REFRESH,
-		REFRESHING
+	private static enum State {
+		PULL_TO_REFRESH, RELEASE_TO_REFRESH, REFRESHING
 	}
 
 	/**
 	 * Interface to implement when you want to get notified of 'pull to refresh'
-	 * events.
-	 * Call setOnRefreshListener(..) to activate an OnRefreshListener.
+	 * events. Call setOnRefreshListener(..) to activate an OnRefreshListener.
 	 */
-	public interface OnRefreshListener{
+	public interface OnRefreshListener {
 
 		/**
 		 * Method to be called when a refresh is requested
@@ -76,39 +76,39 @@ public class MultiColumnPullToRefreshListView extends MultiColumnListView {
 	private boolean bounceBackHeader;
 	private boolean lockScrollWhileRefreshing;
 	private boolean showLastUpdatedText;
-	private String  pullToRefreshText;
-	private String  releaseToRefreshText;
-	private String  refreshingText;
-	private String  lastUpdatedText;
+	private String pullToRefreshText;
+	private String releaseToRefreshText;
+	private String refreshingText;
+	private String lastUpdatedText;
 	private SimpleDateFormat lastUpdatedDateFormat = new SimpleDateFormat("dd/MM HH:mm");
 
-	private float                   previousY;
-	private int                     headerPadding;
-	private boolean                 hasResetHeader;
-	private long                    lastUpdated = -1;
-	private State                   state;
-	private LinearLayout            headerContainer;
-	private RelativeLayout          header;
-	private RotateAnimation         flipAnimation;
-	private RotateAnimation         reverseFlipAnimation;
-	private ImageView               image;
-	private ProgressBar             spinner;
-	private TextView                text;
-	private TextView                lastUpdatedTextView;
-	private OnRefreshListener       onRefreshListener;
-	private TranslateAnimation		bounceAnimation;
+	private float previousY;
+	private int headerPadding;
+	private boolean hasResetHeader;
+	private long lastUpdated = -1;
+	private State state;
+	private LinearLayout headerContainer;
+	private RelativeLayout header;
+	private RotateAnimation flipAnimation;
+	private RotateAnimation reverseFlipAnimation;
+	private ImageView image;
+	private ProgressBar spinner;
+	private TextView text;
+	private TextView lastUpdatedTextView;
+	private OnRefreshListener onRefreshListener;
+	private TranslateAnimation bounceAnimation;
 
-	public MultiColumnPullToRefreshListView(Context context){
+	public MultiColumnPullToRefreshListView(Context context) {
 		super(context);
 		init();
 	}
 
-	public MultiColumnPullToRefreshListView(Context context, AttributeSet attrs){
+	public MultiColumnPullToRefreshListView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
 	}
 
-	public MultiColumnPullToRefreshListView(Context context, AttributeSet attrs, int defStyle){
+	public MultiColumnPullToRefreshListView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init();
 	}
@@ -116,69 +116,72 @@ public class MultiColumnPullToRefreshListView extends MultiColumnListView {
 	/**
 	 * Activate an OnRefreshListener to get notified on 'pull to refresh'
 	 * events.
-	 *
-	 * @param onRefreshListener The OnRefreshListener to get notified
+	 * 
+	 * @param onRefreshListener
+	 *            The OnRefreshListener to get notified
 	 */
-	public void setOnRefreshListener(OnRefreshListener onRefreshListener){
+	public void setOnRefreshListener(OnRefreshListener onRefreshListener) {
 		this.onRefreshListener = onRefreshListener;
 	}
 
 	/**
 	 * @return If the list is in 'Refreshing' state
 	 */
-	public boolean isRefreshing(){
+	public boolean isRefreshing() {
 		return state == State.REFRESHING;
 	}
 
 	/**
 	 * Default is false. When lockScrollWhileRefreshing is set to true, the list
 	 * cannot scroll when in 'refreshing' mode. It's 'locked' on refreshing.
-	 *
+	 * 
 	 * @param lockScrollWhileRefreshing
 	 */
-	public void setLockScrollWhileRefreshing(boolean lockScrollWhileRefreshing){
+	public void setLockScrollWhileRefreshing(boolean lockScrollWhileRefreshing) {
 		this.lockScrollWhileRefreshing = lockScrollWhileRefreshing;
 	}
 
 	/**
-	 * Default is false. Show the last-updated date/time in the 'Pull ro Refresh'
-	 * header. See 'setLastUpdatedDateFormat' to set the date/time formatting.
-	 *
+	 * Default is false. Show the last-updated date/time in the 'Pull ro
+	 * Refresh' header. See 'setLastUpdatedDateFormat' to set the date/time
+	 * formatting.
+	 * 
 	 * @param showLastUpdatedText
 	 */
-	public void setShowLastUpdatedText(boolean showLastUpdatedText){
+	public void setShowLastUpdatedText(boolean showLastUpdatedText) {
 		this.showLastUpdatedText = showLastUpdatedText;
-		if(!showLastUpdatedText) lastUpdatedTextView.setVisibility(View.GONE);
+		if (!showLastUpdatedText)
+			lastUpdatedTextView.setVisibility(View.GONE);
 	}
 
 	/**
 	 * Default: "dd/MM HH:mm". Set the format in which the last-updated
-	 * date/time is shown. Meaningless if 'showLastUpdatedText == false (default)'.
-	 * See 'setShowLastUpdatedText'.
-	 *
+	 * date/time is shown. Meaningless if 'showLastUpdatedText == false
+	 * (default)'. See 'setShowLastUpdatedText'.
+	 * 
 	 * @param lastUpdatedDateFormat
 	 */
-	public void setLastUpdatedDateFormat(SimpleDateFormat lastUpdatedDateFormat){
+	public void setLastUpdatedDateFormat(SimpleDateFormat lastUpdatedDateFormat) {
 		this.lastUpdatedDateFormat = lastUpdatedDateFormat;
 	}
 
 	/**
-	 * Explicitly set the state to refreshing. This
-	 * is useful when you want to show the spinner and 'Refreshing' text when
-	 * the refresh was not triggered by 'pull to refresh', for example on start.
+	 * Explicitly set the state to refreshing. This is useful when you want to
+	 * show the spinner and 'Refreshing' text when the refresh was not triggered
+	 * by 'pull to refresh', for example on start.
 	 */
-	public void setRefreshing(){
+	public void setRefreshing() {
 		state = State.REFRESHING;
 		setUiRefreshing();
-		//setHeaderPadding(0);
-		//scrollTo(0, 0);
+		// setHeaderPadding(0);
+		// scrollTo(0, 0);
 	}
 
 	/**
 	 * Set the state back to 'pull to refresh'. Call this method when refreshing
 	 * the data is finished.
 	 */
-	public void onRefreshComplete(){
+	public void onRefreshComplete() {
 		state = State.PULL_TO_REFRESH;
 		resetHeader();
 		lastUpdated = System.currentTimeMillis();
@@ -186,41 +189,44 @@ public class MultiColumnPullToRefreshListView extends MultiColumnListView {
 
 	/**
 	 * Change the label text on state 'Pull to Refresh'
-	 *
-	 * @param pullToRefreshText Text
+	 * 
+	 * @param pullToRefreshText
+	 *            Text
 	 */
-	public void setTextPullToRefresh(String pullToRefreshText){
+	public void setTextPullToRefresh(String pullToRefreshText) {
 		this.pullToRefreshText = pullToRefreshText;
-		if(state == State.PULL_TO_REFRESH){
+		if (state == State.PULL_TO_REFRESH) {
 			text.setText(pullToRefreshText);
 		}
 	}
 
 	/**
 	 * Change the label text on state 'Release to Refresh'
-	 *
-	 * @param releaseToRefreshText Text
+	 * 
+	 * @param releaseToRefreshText
+	 *            Text
 	 */
-	public void setTextReleaseToRefresh(String releaseToRefreshText){
+	public void setTextReleaseToRefresh(String releaseToRefreshText) {
 		this.releaseToRefreshText = releaseToRefreshText;
-		if(state == State.RELEASE_TO_REFRESH){
+		if (state == State.RELEASE_TO_REFRESH) {
 			text.setText(releaseToRefreshText);
 		}
 	}
 
 	/**
 	 * Change the label text on state 'Refreshing'
-	 *
-	 * @param refreshingText Text
+	 * 
+	 * @param refreshingText
+	 *            Text
 	 */
-	public void setTextRefreshing(String refreshingText){
+	public void setTextRefreshing(String refreshingText) {
 		this.refreshingText = refreshingText;
-		if(state == State.REFRESHING){
+		if (state == State.REFRESHING) {
 			text.setText(refreshingText);
 		}
 	}
 
-	private void init(){
+	private void init() {
 		setVerticalFadingEdgeEnabled(false);
 
 		headerContainer = (LinearLayout) LayoutInflater.from(getContext()).inflate(R.layout.ptr_header, null);
@@ -252,40 +258,40 @@ public class MultiColumnPullToRefreshListView extends MultiColumnListView {
 		ViewTreeObserver vto = header.getViewTreeObserver();
 		vto.addOnGlobalLayoutListener(new PTROnGlobalLayoutListener());
 
-		//super.setOnItemClickListener(new PTROnItemClickListener());
-		//super.setOnItemLongClickListener(new PTROnItemLongClickListener());
+		// super.setOnItemClickListener(new PTROnItemClickListener());
+		// super.setOnItemLongClickListener(new PTROnItemLongClickListener());
 	}
 
-	private void setHeaderPadding(int padding){
+	private void setHeaderPadding(int padding) {
 		headerPadding = padding;
 
 		MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) header.getLayoutParams();
 		mlp.setMargins(0, Math.round(padding), 0, 0);
 		header.setLayoutParams(mlp);
 	}
-	
+
 	private boolean isPulling = false;
-	private boolean isPull(MotionEvent event){
+
+	private boolean isPull(MotionEvent event) {
 		return isPulling;
 	}
-	
+
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent event) {
-		if(lockScrollWhileRefreshing
-				&& (state == State.REFRESHING || getAnimation() != null && !getAnimation().hasEnded())){
-			return true;	//consume touch event here..
+		if (lockScrollWhileRefreshing && (state == State.REFRESHING || getAnimation() != null && !getAnimation().hasEnded())) {
+			return true; // consume touch event here..
 		}
-		
-		switch(event.getAction()){
+
+		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			if( getFirstVisiblePosition() == 0 )
+			if (getFirstVisiblePosition() == 0)
 				previousY = event.getY();
 			break;
 		case MotionEvent.ACTION_MOVE:
-			if( getFirstVisiblePosition() == 0 && event.getY() - previousY > 0 ) {
+			if (getFirstVisiblePosition() == 0 && event.getY() - previousY > 0) {
 				isPulling = true;
 				return true;
-			}else{
+			} else {
 				isPulling = false;
 			}
 			break;
@@ -294,22 +300,21 @@ public class MultiColumnPullToRefreshListView extends MultiColumnListView {
 			isPulling = false;
 			break;
 		}
-		
+
 		return super.onInterceptTouchEvent(event);
 	}
 
 	@Override
-	public boolean onTouchEvent(MotionEvent event){
-		if(lockScrollWhileRefreshing
-				&& (state == State.REFRESHING || getAnimation() != null && !getAnimation().hasEnded())){
+	public boolean onTouchEvent(MotionEvent event) {
+		if (lockScrollWhileRefreshing && (state == State.REFRESHING || getAnimation() != null && !getAnimation().hasEnded())) {
 			return true;
 		}
 
-		switch(event.getAction()){
+		switch (event.getAction()) {
 
 		case MotionEvent.ACTION_UP:
-			if(isPull(event) && (state == State.RELEASE_TO_REFRESH || getFirstVisiblePosition() == 0)){
-				switch(state){
+			if (isPull(event) && (state == State.RELEASE_TO_REFRESH || getFirstVisiblePosition() == 0)) {
+				switch (state) {
 				case RELEASE_TO_REFRESH:
 					setState(State.REFRESHING);
 					bounceBackHeader();
@@ -324,23 +329,24 @@ public class MultiColumnPullToRefreshListView extends MultiColumnListView {
 			break;
 
 		case MotionEvent.ACTION_MOVE:
-			if(isPull(event)){
+			if (isPull(event)) {
 				float y = event.getY();
 				float diff = y - previousY;
-				if(diff > 0) diff /= PULL_RESISTANCE;
+				if (diff > 0)
+					diff /= PULL_RESISTANCE;
 				previousY = y;
 
 				int newHeaderPadding = Math.max(Math.round(headerPadding + diff), -header.getHeight());
 
-				if(newHeaderPadding != headerPadding && state != State.REFRESHING){
+				if (newHeaderPadding != headerPadding && state != State.REFRESHING) {
 					setHeaderPadding(newHeaderPadding);
 
-					if(state == State.PULL_TO_REFRESH && headerPadding > 0){
+					if (state == State.PULL_TO_REFRESH && headerPadding > 0) {
 						setState(State.RELEASE_TO_REFRESH);
 
 						image.clearAnimation();
 						image.startAnimation(flipAnimation);
-					}else if(state == State.RELEASE_TO_REFRESH && headerPadding < 0){
+					} else if (state == State.RELEASE_TO_REFRESH && headerPadding < 0) {
 						setState(State.PULL_TO_REFRESH);
 
 						image.clearAnimation();
@@ -355,56 +361,53 @@ public class MultiColumnPullToRefreshListView extends MultiColumnListView {
 		return super.onTouchEvent(event);
 	}
 
-	private void bounceBackHeader(){
-		int yTranslate = state == State.REFRESHING ?
-				header.getHeight() - headerContainer.getHeight() :
-					-headerContainer.getHeight() - headerContainer.getTop();
+	private void bounceBackHeader() {
+		int yTranslate = state == State.REFRESHING ? header.getHeight() - headerContainer.getHeight() : -headerContainer.getHeight()
+				- headerContainer.getTop();
 
-				bounceAnimation = new TranslateAnimation(
-						TranslateAnimation.ABSOLUTE, 0,
-						TranslateAnimation.ABSOLUTE, 0,
-						TranslateAnimation.ABSOLUTE, 0,
-						TranslateAnimation.ABSOLUTE, yTranslate);
+		bounceAnimation = new TranslateAnimation(TranslateAnimation.ABSOLUTE, 0, TranslateAnimation.ABSOLUTE, 0,
+				TranslateAnimation.ABSOLUTE, 0, TranslateAnimation.ABSOLUTE, yTranslate);
 
-				bounceAnimation.setDuration(BOUNCE_ANIMATION_DURATION);
-				bounceAnimation.setFillEnabled(true);
-				bounceAnimation.setFillAfter(false);
-				bounceAnimation.setFillBefore(true);
-				//bounceAnimation.setInterpolator(new OvershootInterpolator(BOUNCE_OVERSHOOT_TENSION));
-				bounceAnimation.setAnimationListener(new HeaderAnimationListener(yTranslate));
-				startAnimation(bounceAnimation);
+		bounceAnimation.setDuration(BOUNCE_ANIMATION_DURATION);
+		bounceAnimation.setFillEnabled(true);
+		bounceAnimation.setFillAfter(false);
+		bounceAnimation.setFillBefore(true);
+		// bounceAnimation.setInterpolator(new
+		// OvershootInterpolator(BOUNCE_OVERSHOOT_TENSION));
+		bounceAnimation.setAnimationListener(new HeaderAnimationListener(yTranslate));
+		startAnimation(bounceAnimation);
 	}
 
-	private void resetHeader(){
-		if(getFirstVisiblePosition() > 0){
+	private void resetHeader() {
+		if (getFirstVisiblePosition() > 0) {
 			setHeaderPadding(-header.getHeight());
 			setState(State.PULL_TO_REFRESH);
 			return;
 		}
 
-		if(getAnimation() != null && !getAnimation().hasEnded()){
+		if (getAnimation() != null && !getAnimation().hasEnded()) {
 			bounceBackHeader = true;
-		}else{
+		} else {
 			bounceBackHeader();
 		}
 	}
 
-	private void setUiRefreshing(){
+	private void setUiRefreshing() {
 		spinner.setVisibility(View.VISIBLE);
 		image.clearAnimation();
 		image.setVisibility(View.INVISIBLE);
 		text.setText(refreshingText);
 	}
 
-	private void setState(State state){
+	private void setState(State state) {
 		this.state = state;
-		switch(state){
+		switch (state) {
 		case PULL_TO_REFRESH:
 			spinner.setVisibility(View.INVISIBLE);
 			image.setVisibility(View.VISIBLE);
 			text.setText(pullToRefreshText);
 
-			if(showLastUpdatedText && lastUpdated != -1){
+			if (showLastUpdatedText && lastUpdated != -1) {
 				lastUpdatedTextView.setVisibility(View.VISIBLE);
 				lastUpdatedTextView.setText(String.format(lastUpdatedText, lastUpdatedDateFormat.format(new Date(lastUpdated))));
 			}
@@ -421,9 +424,9 @@ public class MultiColumnPullToRefreshListView extends MultiColumnListView {
 			setUiRefreshing();
 
 			lastUpdated = System.currentTimeMillis();
-			if(onRefreshListener == null){
+			if (onRefreshListener == null) {
 				setState(State.PULL_TO_REFRESH);
-			}else{
+			} else {
 				onRefreshListener.onRefresh();
 			}
 
@@ -432,11 +435,11 @@ public class MultiColumnPullToRefreshListView extends MultiColumnListView {
 	}
 
 	@Override
-	protected void onScrollChanged(int l, int t, int oldl, int oldt){
+	protected void onScrollChanged(int l, int t, int oldl, int oldt) {
 		super.onScrollChanged(l, t, oldl, oldt);
 
-		if(!hasResetHeader){
-			if(measuredHeaderHeight > 0 && state != State.REFRESHING){
+		if (!hasResetHeader) {
+			if (measuredHeaderHeight > 0 && state != State.REFRESHING) {
 				setHeaderPadding(-measuredHeaderHeight);
 			}
 
@@ -444,17 +447,17 @@ public class MultiColumnPullToRefreshListView extends MultiColumnListView {
 		}
 	}
 
-	private class HeaderAnimationListener implements AnimationListener{
+	private class HeaderAnimationListener implements AnimationListener {
 
 		private int height, translation;
 		private State stateAtAnimationStart;
 
-		public HeaderAnimationListener(int translation){
+		public HeaderAnimationListener(int translation) {
 			this.translation = translation;
 		}
 
 		@Override
-		public void onAnimationStart(Animation animation){
+		public void onAnimationStart(Animation animation) {
 			stateAtAnimationStart = state;
 
 			android.view.ViewGroup.LayoutParams lp = getLayoutParams();
@@ -462,54 +465,55 @@ public class MultiColumnPullToRefreshListView extends MultiColumnListView {
 			lp.height = getHeight() - translation;
 			setLayoutParams(lp);
 
-			if(scrollbarEnabled){
+			if (scrollbarEnabled) {
 				setVerticalScrollBarEnabled(false);
 			}
 		}
 
 		@Override
-		public void onAnimationEnd(Animation animation){
+		public void onAnimationEnd(Animation animation) {
 			setHeaderPadding(stateAtAnimationStart == State.REFRESHING ? 0 : -measuredHeaderHeight - headerContainer.getTop());
-			//setSelection(0);
+			// setSelection(0);
 
 			android.view.ViewGroup.LayoutParams lp = getLayoutParams();
 			lp.height = height;
 			setLayoutParams(lp);
 
-			if(scrollbarEnabled){
+			if (scrollbarEnabled) {
 				setVerticalScrollBarEnabled(true);
 			}
 
-			if(bounceBackHeader){
+			if (bounceBackHeader) {
 				bounceBackHeader = false;
 
-				postDelayed(new Runnable(){
+				postDelayed(new Runnable() {
 
 					@Override
-					public void run(){
+					public void run() {
 						resetHeader();
 					}
 				}, BOUNCE_ANIMATION_DELAY);
-			}else if(stateAtAnimationStart != State.REFRESHING){
+			} else if (stateAtAnimationStart != State.REFRESHING) {
 				setState(State.PULL_TO_REFRESH);
 			}
 		}
 
 		@Override
-		public void onAnimationRepeat(Animation animation){}
+		public void onAnimationRepeat(Animation animation) {
+		}
 	}
 
-	private class PTROnGlobalLayoutListener implements OnGlobalLayoutListener{
+	private class PTROnGlobalLayoutListener implements OnGlobalLayoutListener {
 
 		@SuppressWarnings("deprecation")
 		@Override
-		public void onGlobalLayout(){
+		public void onGlobalLayout() {
 			int initialHeaderHeight = header.getHeight();
 
-			if(initialHeaderHeight > 0){
+			if (initialHeaderHeight > 0) {
 				measuredHeaderHeight = initialHeaderHeight;
 
-				if(measuredHeaderHeight > 0 && state != State.REFRESHING){
+				if (measuredHeaderHeight > 0 && state != State.REFRESHING) {
 					setHeaderPadding(-measuredHeaderHeight);
 					requestLayout();
 				}
@@ -519,31 +523,38 @@ public class MultiColumnPullToRefreshListView extends MultiColumnListView {
 		}
 	}
 
-	//    private class PTROnItemClickListener implements OnItemClickListener {
-		//
-		//        @Override
-		//        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id){
-			//            hasResetHeader = false;
-			//
-			//            if(onItemClickListener != null && state == State.PULL_TO_REFRESH){
-				//                // Passing up onItemClick. Correct position with the number of header views
-				//                onItemClickListener.onItemClick(adapterView, view, position - getHeaderViewsCount(), id);
-	//            }
-	//        }
-	//    }
+	// private class PTROnItemClickListener implements OnItemClickListener {
 	//
-	//    private class PTROnItemLongClickListener implements OnItemLongClickListener{
+	// @Override
+	// public void onItemClick(AdapterView<?> adapterView, View view, int
+	// position, long id){
+	// hasResetHeader = false;
 	//
-	//        @Override
-	//        public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id){
-	//            hasResetHeader = false;
+	// if(onItemClickListener != null && state == State.PULL_TO_REFRESH){
+	// // Passing up onItemClick. Correct position with the number of header
+	// views
+	// onItemClickListener.onItemClick(adapterView, view, position -
+	// getHeaderViewsCount(), id);
+	// }
+	// }
+	// }
 	//
-	//            if(onItemLongClickListener != null && state == State.PULL_TO_REFRESH){
-	//                // Passing up onItemLongClick. Correct position with the number of header views
-	//                return onItemLongClickListener.onItemLongClick(adapterView, view, position - getHeaderViewsCount(), id);
-	//            }
+	// private class PTROnItemLongClickListener implements
+	// OnItemLongClickListener{
 	//
-	//            return false;
-	//        }
-	//    }
+	// @Override
+	// public boolean onItemLongClick(AdapterView<?> adapterView, View view, int
+	// position, long id){
+	// hasResetHeader = false;
+	//
+	// if(onItemLongClickListener != null && state == State.PULL_TO_REFRESH){
+	// // Passing up onItemLongClick. Correct position with the number of header
+	// views
+	// return onItemLongClickListener.onItemLongClick(adapterView, view,
+	// position - getHeaderViewsCount(), id);
+	// }
+	//
+	// return false;
+	// }
+	// }
 }
