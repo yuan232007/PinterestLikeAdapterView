@@ -20,8 +20,11 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
@@ -95,6 +98,7 @@ public class PullToRefreshSampleActivity extends FragmentActivity {
 						newsInfo1.setAlbid(newsInfoLeftObject.isNull("albid") ? "" : newsInfoLeftObject.getString("albid"));
 						newsInfo1.setIsrc(newsInfoLeftObject.isNull("isrc") ? "" : newsInfoLeftObject.getString("isrc"));
 						newsInfo1.setMsg(newsInfoLeftObject.isNull("msg") ? "" : newsInfoLeftObject.getString("msg"));
+						newsInfo1.setHeight(newsInfoLeftObject.getInt("iht"));
 						duitangs.add(newsInfo1);
 					}
 				}
@@ -136,17 +140,21 @@ public class PullToRefreshSampleActivity extends FragmentActivity {
 				LayoutInflater layoutInflator = LayoutInflater.from(parent.getContext());
 				convertView = layoutInflator.inflate(R.layout.infos_list, null);
 				holder = new ViewHolder();
-				holder.imageView = (ScaleImageView) convertView.findViewById(R.id.news_pic);
+				holder.imageView = (ImageView) convertView.findViewById(R.id.news_pic);
+				holder.contentView = (TextView) convertView.findViewById(R.id.news_title);
 				convertView.setTag(holder);
 			}
 
 			holder = (ViewHolder) convertView.getTag();
+			double height = duitangInfo.getWidth() / 240.0 * duitangInfo.getHeight();
+			holder.imageView.setLayoutParams(new LinearLayout.LayoutParams(240, (int) height));
+			holder.contentView.setText(duitangInfo.getMsg());
 			mImageFetcher.loadImage(duitangInfo.getIsrc(), holder.imageView);
 			return convertView;
 		}
 
 		class ViewHolder {
-			ScaleImageView imageView;
+			ImageView imageView;
 			TextView contentView;
 			TextView timeView;
 		}
@@ -178,6 +186,7 @@ public class PullToRefreshSampleActivity extends FragmentActivity {
 		setContentView(R.layout.act_pull_to_refresh_sample);
 		mAdapter = new StaggeredAdapter(this);
 		mAdapterView = (PLA_AdapterView<ListAdapter>) findViewById(R.id.list);
+
 		ImageCacheParams cacheParams = new ImageCacheParams(this, IMAGE_CACHE_DIR);
 
 		cacheParams.setMemCacheSizePercent(0.25f);
@@ -195,30 +204,6 @@ public class PullToRefreshSampleActivity extends FragmentActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 
-		// switch (item.getItemId()) {
-		// case 1001: {
-		// int startCount = mAdapter.getCount();
-		// for (int i = 0; i < 100; ++i) {
-		// // generate 100 random items.
-		//
-		// StringBuilder builder = new StringBuilder();
-		// builder.append("Hello!![");
-		// builder.append(startCount + i);
-		// builder.append("] ");
-		//
-		// char[] chars = new char[mRand.nextInt(100)];
-		// Arrays.fill(chars, '1');
-		// builder.append(chars);
-		// mAdapter.add(builder.toString());
-		// }
-		// }
-		// break;
-		// case 1002: {
-		// Intent intent = new Intent(this, PullToRefreshSampleActivity.class);
-		// startActivity(intent);
-		// }
-		// break;
-		// }
 		return true;
 	}
 
@@ -232,7 +217,6 @@ public class PullToRefreshSampleActivity extends FragmentActivity {
 
 	@Override
 	protected void onDestroy() {
-		// TODO Auto-generated method stub
 		super.onDestroy();
 		mImageFetcher.closeCache();
 

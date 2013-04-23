@@ -2,10 +2,14 @@ package com.dodola.model;
 
 public class DuitangInfo {
 
-	private String	albid	= "";
-	private String	msg		= "";
-	private String	isrc	= "";
+	private int height;
+	private String albid = "";
+	private String msg = "";
+	private String isrc = "";
 
+	public int getWidth(){
+		return 200;
+	}
 	public String getAlbid() {
 		return albid;
 	}
@@ -28,6 +32,14 @@ public class DuitangInfo {
 
 	public void setIsrc(String isrc) {
 		this.isrc = isrc;
+	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
 	}
 
 }

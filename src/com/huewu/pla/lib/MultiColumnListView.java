@@ -38,7 +38,7 @@ public class MultiColumnListView extends PLA_ListView {
 
 	private static final int DEFAULT_COLUMN_NUMBER = 2;
 
-	private int mColumnNumber = 3;
+	private int mColumnNumber = 2;
 	private Column[] mColumns = null;
 	private Column mFixedColumn = null; // column for footers & headers.
 	private SparseIntArray mItems = new SparseIntArray();

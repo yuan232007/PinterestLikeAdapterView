@@ -11,7 +11,7 @@
         android:background="@drawable/news_item_bg"
         android:orientation="vertical" >
 
-        <com.dodowaterfall.widget.ScaleImageView
+        <ImageView
             android:id="@+id/news_pic"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
