@@ -6,6 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import me.maxwin.view.XListView;
+import me.maxwin.view.XListView.IXListViewListener;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,29 +29,29 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.dodola.model.DuitangInfo;
 import com.dodowaterfall.Helper;
-import com.dodowaterfall.widget.ScaleImageView;
-import com.example.android.bitmapfun.util.ImageCache.ImageCacheParams;
 import com.example.android.bitmapfun.util.ImageFetcher;
-import com.huewu.pla.lib.internal.PLA_AdapterView;
 
-public class PullToRefreshSampleActivity extends FragmentActivity {
+public class PullToRefreshSampleActivity extends FragmentActivity implements IXListViewListener {
 	private ImageFetcher mImageFetcher;
-	private PLA_AdapterView<ListAdapter> mAdapterView = null;
+	private XListView mAdapterView = null;
 	private StaggeredAdapter mAdapter = null;
-	private static final String IMAGE_CACHE_DIR = "thumbs";
-	ContentTask task = new ContentTask(this);
+	private int currentPage = 0;
+	ContentTask task = new ContentTask(this, 2);
 
 	private class ContentTask extends AsyncTask<String, Integer, List<DuitangInfo>> {
 
 		private Context mContext;
+		private int mType = 1;
 
-		public ContentTask(Context context) {
+		public ContentTask(Context context, int type) {
 			super();
 			mContext = context;
+			mType = type;
 		}
 
 		@Override
@@ -63,8 +66,35 @@ public class PullToRefreshSampleActivity extends FragmentActivity {
 
 		@Override
 		protected void onPostExecute(List<DuitangInfo> result) {
-			mAdapter.addItem(result);
-			mAdapter.notifyDataSetChanged();
+			if (mType == 1) {
+
+				mAdapter.addItemTop(result);
+				mAdapter.notifyDataSetChanged();
+				mAdapterView.stopRefresh();
+
+			} else if (mType == 2) {
+				mAdapterView.stopLoadMore();
+				mAdapter.addItemLast(result);
+				mAdapter.notifyDataSetChanged();
+			}
+
+		}
+
+		protected View getViewPosition(int position) {
+			int firstPosition = mAdapterView.getFirstVisiblePosition() - mAdapterView.getHeaderViewsCount(); // This
+																												// #0
+			int wantedChild = position - firstPosition;
+			// Say, first visible position is 8, you want position 10,
+			// wantedChild will now be 2
+			// So that means your view is child #2 in the ViewGroup:
+			if (wantedChild < 0 || wantedChild >= mAdapterView.getChildCount()) {
+				return null;
+			}
+			// Could also check if wantedPosition is between
+			// listView.getFirstVisiblePosition() and
+			// listView.getLastVisiblePosition() instead.
+			View wantedView = mAdapterView.getChildAt(wantedChild);
+			return wantedView;
 		}
 
 		@Override
@@ -109,12 +139,18 @@ public class PullToRefreshSampleActivity extends FragmentActivity {
 		}
 	}
 
-	private void AddItemToContainer(int pageindex) {
+	/**
+	 * 添加内容
+	 * 
+	 * @param pageindex
+	 * @param type
+	 *            1为下拉刷新 2为加载更多
+	 */
+	private void AddItemToContainer(int pageindex, int type) {
 		if (task.getStatus() != Status.RUNNING) {
-
 			String url = "http://www.duitang.com/album/1733789/masn/p/" + pageindex + "/24/";
 			Log.d("MainActivity", "current url:" + url);
-			ContentTask task = new ContentTask(this);
+			ContentTask task = new ContentTask(this, type);
 			task.execute(url);
 
 		}
@@ -146,7 +182,7 @@ public class PullToRefreshSampleActivity extends FragmentActivity {
 			}
 
 			holder = (ViewHolder) convertView.getTag();
-			double height = duitangInfo.getWidth() / 240.0 * duitangInfo.getHeight();
+			double height = 240.0 / duitangInfo.getWidth() * duitangInfo.getHeight();
 			holder.imageView.setLayoutParams(new LinearLayout.LayoutParams(240, (int) height));
 			holder.contentView.setText(duitangInfo.getMsg());
 			mImageFetcher.loadImage(duitangInfo.getIsrc(), holder.imageView);
@@ -174,8 +210,14 @@ public class PullToRefreshSampleActivity extends FragmentActivity {
 			return 0;
 		}
 
-		public void addItem(List<DuitangInfo> datas) {
+		public void addItemLast(List<DuitangInfo> datas) {
 			mInfos.addAll(datas);
+		}
+
+		public void addItemTop(List<DuitangInfo> datas) {
+			for (DuitangInfo info : datas) {
+				mInfos.addFirst(info);
+			}
 		}
 	}
 
@@ -185,19 +227,16 @@ public class PullToRefreshSampleActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.act_pull_to_refresh_sample);
 		mAdapter = new StaggeredAdapter(this);
-		mAdapterView = (PLA_AdapterView<ListAdapter>) findViewById(R.id.list);
-
-		ImageCacheParams cacheParams = new ImageCacheParams(this, IMAGE_CACHE_DIR);
-
-		cacheParams.setMemCacheSizePercent(0.25f);
-		mImageFetcher = new ImageFetcher(this, 100);
+		mAdapterView = (XListView) findViewById(R.id.list);
+		mAdapterView.setPullLoadEnable(true);
+		mAdapterView.setXListViewListener(this);
+		mAdapterView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
+		mImageFetcher = new ImageFetcher(this, 240);
 		mImageFetcher.setLoadingImage(R.drawable.empty_photo);
-		mImageFetcher.addImageCache(this.getSupportFragmentManager(), cacheParams);
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(Menu.NONE, 1001, 0, "Load More Contents");
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -212,16 +251,24 @@ public class PullToRefreshSampleActivity extends FragmentActivity {
 		super.onResume();
 		mImageFetcher.setExitTasksEarly(false);
 		mAdapterView.setAdapter(mAdapter);
-		AddItemToContainer(0);
+		AddItemToContainer(currentPage, 2);
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		mImageFetcher.closeCache();
 
 	}
 
-	private Random mRand = new Random();
+	@Override
+	public void onRefresh() {
+		AddItemToContainer(++currentPage, 1);
 
+	}
+
+	@Override
+	public void onLoadMore() {
+		AddItemToContainer(++currentPage, 2);
+
+	}
 }// end of class

@@ -16,16 +16,13 @@
 
 package com.example.android.bitmapfun.util;
 
+import com.huewu.pla.sample.BuildConfig;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
-
-import java.io.FileDescriptor;
-
-import com.huewu.pla.sample.BuildConfig;
-
 
 /**
  * A simple subclass of {@link ImageWorker} that resizes images from resources
@@ -33,7 +30,7 @@ import com.huewu.pla.sample.BuildConfig;
  * too large to simply load directly into memory.
  */
 public class ImageResizer extends ImageWorker {
-	private static final String TAG = "ImageResizer";
+	private static final String TAG = "ImageWorker";
 	protected int mImageWidth;
 	protected int mImageHeight;
 
@@ -94,7 +91,7 @@ public class ImageResizer extends ImageWorker {
 		if (BuildConfig.DEBUG) {
 			Log.d(TAG, "processBitmap - " + resId);
 		}
-		return decodeSampledBitmapFromResource(mResources, resId, mImageWidth, mImageHeight);
+		return decodeSampledBitmapFromResource(mContext.getResources(), resId, mImageWidth, mImageHeight);
 	}
 
 	@Override
@@ -147,7 +144,7 @@ public class ImageResizer extends ImageWorker {
 	 *         ratio and dimensions that are equal to or greater than the
 	 *         requested width and height
 	 */
-	public static Bitmap decodeSampledBitmapFromFile(String filename, int reqWidth, int reqHeight) {
+	public static synchronized Bitmap decodeSampledBitmapFromFile(String filename, int reqWidth, int reqHeight) {
 
 		// First decode with inJustDecodeBounds=true to check dimensions
 		final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -160,35 +157,6 @@ public class ImageResizer extends ImageWorker {
 		// Decode bitmap with inSampleSize set
 		options.inJustDecodeBounds = false;
 		return BitmapFactory.decodeFile(filename, options);
-	}
-
-	/**
-	 * Decode and sample down a bitmap from a file input stream to the requested
-	 * width and height.
-	 * 
-	 * @param fileDescriptor
-	 *            The file descriptor to read from
-	 * @param reqWidth
-	 *            The requested width of the resulting bitmap
-	 * @param reqHeight
-	 *            The requested height of the resulting bitmap
-	 * @return A bitmap sampled down from the original with the same aspect
-	 *         ratio and dimensions that are equal to or greater than the
-	 *         requested width and height
-	 */
-	public static Bitmap decodeSampledBitmapFromDescriptor(FileDescriptor fileDescriptor, int reqWidth, int reqHeight) {
-
-		// First decode with inJustDecodeBounds=true to check dimensions
-		final BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inJustDecodeBounds = true;
-		BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options);
-
-		// Calculate inSampleSize
-		options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
-		// Decode bitmap with inSampleSize set
-		options.inJustDecodeBounds = false;
-		return BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options);
 	}
 
 	/**
@@ -217,17 +185,11 @@ public class ImageResizer extends ImageWorker {
 		int inSampleSize = 1;
 
 		if (height > reqHeight || width > reqWidth) {
-
-			// Calculate ratios of height and width to requested height and
-			// width
-			final int heightRatio = Math.round((float) height / (float) reqHeight);
-			final int widthRatio = Math.round((float) width / (float) reqWidth);
-
-			// Choose the smallest ratio as inSampleSize value, this will
-			// guarantee a final image
-			// with both dimensions larger than or equal to the requested height
-			// and width.
-			inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+			if (width > height) {
+				inSampleSize = Math.round((float) height / (float) reqHeight);
+			} else {
+				inSampleSize = Math.round((float) width / (float) reqWidth);
+			}
 
 			// This offers some additional logic in case the image has a strange
 			// aspect ratio. For example, a panorama may have a much larger
@@ -239,7 +201,7 @@ public class ImageResizer extends ImageWorker {
 			final float totalPixels = width * height;
 
 			// Anything more than 2x the requested pixels we'll sample down
-			// further
+			// further.
 			final float totalReqPixelsCap = reqWidth * reqHeight * 2;
 
 			while (totalPixels / (inSampleSize * inSampleSize) > totalReqPixelsCap) {
