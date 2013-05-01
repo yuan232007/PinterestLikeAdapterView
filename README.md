@@ -22,9 +22,18 @@ Not supported Features
 * Filter
 * Handle Key Event & Arrow Scrolling..
 
+TODO:
+---------------
+* 下拉刷新后保持当前位置
+* 多选模式
+* 图片的宽度判断
+
 
 Screen Shot
 ----------------
+新截图
+
+
 This is a screen shot of sample activity.
 
 ![Example Image][3]
