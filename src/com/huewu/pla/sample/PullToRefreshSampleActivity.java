@@ -80,23 +80,6 @@ public class PullToRefreshSampleActivity extends FragmentActivity implements IXL
 
 		}
 
-		protected View getViewPosition(int position) {
-			int firstPosition = mAdapterView.getFirstVisiblePosition() - mAdapterView.getHeaderViewsCount(); // This
-																												// #0
-			int wantedChild = position - firstPosition;
-			// Say, first visible position is 8, you want position 10,
-			// wantedChild will now be 2
-			// So that means your view is child #2 in the ViewGroup:
-			if (wantedChild < 0 || wantedChild >= mAdapterView.getChildCount()) {
-				return null;
-			}
-			// Could also check if wantedPosition is between
-			// listView.getFirstVisiblePosition() and
-			// listView.getLastVisiblePosition() instead.
-			View wantedView = mAdapterView.getChildAt(wantedChild);
-			return wantedView;
-		}
-
 		@Override
 		protected void onPreExecute() {
 		}
@@ -230,7 +213,6 @@ public class PullToRefreshSampleActivity extends FragmentActivity implements IXL
 		mAdapterView = (XListView) findViewById(R.id.list);
 		mAdapterView.setPullLoadEnable(true);
 		mAdapterView.setXListViewListener(this);
-		mAdapterView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
 		mImageFetcher = new ImageFetcher(this, 240);
 		mImageFetcher.setLoadingImage(R.drawable.empty_photo);
 	}
