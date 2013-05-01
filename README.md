@@ -33,6 +33,9 @@ Screen Shot
 ----------------
 新截图
 
+![01](https://github.com/dodola/PinterestLikeAdapterView/raw/master/01.png)
+![02](https://github.com/dodola/PinterestLikeAdapterView/raw/master/02.png)
+![03](https://github.com/dodola/PinterestLikeAdapterView/raw/master/03.png)
 
 This is a screen shot of sample activity.
 
