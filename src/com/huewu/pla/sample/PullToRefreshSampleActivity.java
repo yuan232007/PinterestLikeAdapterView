@@ -36,14 +36,16 @@ import com.dodola.model.DuitangInfo;
 import com.dodowaterfall.Helper;
 import com.example.android.bitmapfun.util.ImageFetcher;
 
-public class PullToRefreshSampleActivity extends FragmentActivity implements IXListViewListener {
+public class PullToRefreshSampleActivity extends FragmentActivity implements
+		IXListViewListener {
 	private ImageFetcher mImageFetcher;
 	private XListView mAdapterView = null;
 	private StaggeredAdapter mAdapter = null;
 	private int currentPage = 0;
 	ContentTask task = new ContentTask(this, 2);
 
-	private class ContentTask extends AsyncTask<String, Integer, List<DuitangInfo>> {
+	private class ContentTask extends
+			AsyncTask<String, Integer, List<DuitangInfo>> {
 
 		private Context mContext;
 		private int mType = 1;
@@ -106,11 +108,17 @@ public class PullToRefreshSampleActivity extends FragmentActivity implements IXL
 					JSONArray blogsJson = jsonObject.getJSONArray("blogs");
 
 					for (int i = 0; i < blogsJson.length(); i++) {
-						JSONObject newsInfoLeftObject = blogsJson.getJSONObject(i);
+						JSONObject newsInfoLeftObject = blogsJson
+								.getJSONObject(i);
 						DuitangInfo newsInfo1 = new DuitangInfo();
-						newsInfo1.setAlbid(newsInfoLeftObject.isNull("albid") ? "" : newsInfoLeftObject.getString("albid"));
-						newsInfo1.setIsrc(newsInfoLeftObject.isNull("isrc") ? "" : newsInfoLeftObject.getString("isrc"));
-						newsInfo1.setMsg(newsInfoLeftObject.isNull("msg") ? "" : newsInfoLeftObject.getString("msg"));
+						newsInfo1
+								.setAlbid(newsInfoLeftObject.isNull("albid") ? ""
+										: newsInfoLeftObject.getString("albid"));
+						newsInfo1
+								.setIsrc(newsInfoLeftObject.isNull("isrc") ? ""
+										: newsInfoLeftObject.getString("isrc"));
+						newsInfo1.setMsg(newsInfoLeftObject.isNull("msg") ? ""
+								: newsInfoLeftObject.getString("msg"));
 						newsInfo1.setHeight(newsInfoLeftObject.getInt("iht"));
 						duitangs.add(newsInfo1);
 					}
@@ -131,7 +139,8 @@ public class PullToRefreshSampleActivity extends FragmentActivity implements IXL
 	 */
 	private void AddItemToContainer(int pageindex, int type) {
 		if (task.getStatus() != Status.RUNNING) {
-			String url = "http://www.duitang.com/album/1733789/masn/p/" + pageindex + "/24/";
+			String url = "http://www.duitang.com/album/1733789/masn/p/"
+					+ pageindex + "/24/";
 			Log.d("MainActivity", "current url:" + url);
 			ContentTask task = new ContentTask(this, type);
 			task.execute(url);
@@ -156,17 +165,22 @@ public class PullToRefreshSampleActivity extends FragmentActivity implements IXL
 			DuitangInfo duitangInfo = mInfos.get(position);
 
 			if (convertView == null) {
-				LayoutInflater layoutInflator = LayoutInflater.from(parent.getContext());
+				LayoutInflater layoutInflator = LayoutInflater.from(parent
+						.getContext());
 				convertView = layoutInflator.inflate(R.layout.infos_list, null);
 				holder = new ViewHolder();
-				holder.imageView = (ImageView) convertView.findViewById(R.id.news_pic);
-				holder.contentView = (TextView) convertView.findViewById(R.id.news_title);
+				holder.imageView = (ImageView) convertView
+						.findViewById(R.id.news_pic);
+				holder.contentView = (TextView) convertView
+						.findViewById(R.id.news_title);
 				convertView.setTag(holder);
 			}
 
 			holder = (ViewHolder) convertView.getTag();
-			double height = 240.0 / duitangInfo.getWidth() * duitangInfo.getHeight();
-			holder.imageView.setLayoutParams(new LinearLayout.LayoutParams(240, (int) height));
+			double height = 240.0 / duitangInfo.getWidth()
+					* duitangInfo.getHeight();
+			holder.imageView.setLayoutParams(new LinearLayout.LayoutParams(240,
+					(int) height));
 			holder.contentView.setText(duitangInfo.getMsg());
 			mImageFetcher.loadImage(duitangInfo.getIsrc(), holder.imageView);
 			return convertView;

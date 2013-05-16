@@ -94,7 +94,7 @@ public class ImageFetcher extends ImageResizer {
      */
     private Bitmap processBitmap(String data) {
         if (BuildConfig.DEBUG) {
-            Log.d(TAG, "processBitmap - " + data);
+//            Log.d(TAG, "processBitmap - " + data);
         }
 
         // Download a bitmap, write it to a file
@@ -131,13 +131,13 @@ public class ImageFetcher extends ImageResizer {
 
         if (cache.containsKey(urlString)) {
             if (BuildConfig.DEBUG) {
-                Log.d(TAG, "downloadBitmap - found in http cache - " + urlString);
+//                Log.d(TAG, "downloadBitmap - found in http cache - " + urlString);
             }
             return cacheFile;
         }
 
         if (BuildConfig.DEBUG) {
-            Log.d(TAG, "downloadBitmap - downloading - " + urlString);
+//            Log.d(TAG, "downloadBitmap - downloading - " + urlString);
         }
 
         Utils.disableConnectionReuseIfNecessary();
