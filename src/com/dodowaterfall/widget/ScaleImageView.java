@@ -20,134 +20,141 @@ import android.widget.RelativeLayout;
  * 
  */
 public class ScaleImageView extends ImageView {
-	private Bitmap currentBitmap;
-	private ImageChangeListener imageChangeListener;
-	private boolean scaleToWidth = false; // this flag determines if should
-											// measure height manually dependent
-											// of width
+    private Bitmap currentBitmap;
+    private ImageChangeListener imageChangeListener;
+    private boolean scaleToWidth = false; // this flag determines if should
+                                          // measure height manually dependent
+                                          // of width
 
-	public ScaleImageView(Context context) {
-		super(context);
-		init();
-	}
+    public ScaleImageView(Context context) {
+        super(context);
+        init();
+    }
 
-	public ScaleImageView(Context context, AttributeSet attrs, int defStyle) {
-		super(context, attrs, defStyle);
-		init();
-	}
+    public ScaleImageView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        init();
+    }
 
-	public ScaleImageView(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		init();
-	}
+    public ScaleImageView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
 
-	private void init() {
-		this.setScaleType(ScaleType.CENTER_INSIDE);
-	}
-	public void recycle(){
-		setImageBitmap(null);
-		if ((this.currentBitmap == null) || (this.currentBitmap.isRecycled()))
-			return;
-		this.currentBitmap.recycle();
-		this.currentBitmap = null;
-	}
+    private void init() {
+        this.setScaleType(ScaleType.CENTER_INSIDE);
+    }
 
-	@Override
-	public void setImageBitmap(Bitmap bm) {
-		currentBitmap = bm;
-		super.setImageBitmap(currentBitmap);
-		if (imageChangeListener != null)
-			imageChangeListener.changed((currentBitmap == null));
-	}
+    public void recycle() {
+        setImageBitmap(null);
+        if ((this.currentBitmap == null) || (this.currentBitmap.isRecycled()))
+            return;
+        this.currentBitmap.recycle();
+        this.currentBitmap = null;
+    }
 
-	@Override
-	public void setImageDrawable(Drawable d) {
-		super.setImageDrawable(d);
-		if (imageChangeListener != null)
-			imageChangeListener.changed((d == null));
-	}
+    @Override
+    public void setImageBitmap(Bitmap bm) {
+        currentBitmap = bm;
+        super.setImageBitmap(currentBitmap);
+        if (imageChangeListener != null)
+            imageChangeListener.changed((currentBitmap == null));
+    }
 
-	@Override
-	public void setImageResource(int id) {
-		super.setImageResource(id);
-	}
+    @Override
+    public void setImageDrawable(Drawable d) {
+        super.setImageDrawable(d);
+        if (imageChangeListener != null)
+            imageChangeListener.changed((d == null));
+    }
 
-	public interface ImageChangeListener {
-		// a callback for when a change has been made to this imageView
-		void changed(boolean isEmpty);
-	}
+    @Override
+    public void setImageResource(int id) {
+        super.setImageResource(id);
+    }
 
-	public ImageChangeListener getImageChangeListener() {
-		return imageChangeListener;
-	}
+    public interface ImageChangeListener {
+        // a callback for when a change has been made to this imageView
+        void changed(boolean isEmpty);
+    }
 
-	public void setImageChangeListener(ImageChangeListener imageChangeListener) {
-		this.imageChangeListener = imageChangeListener;
-	}
+    public ImageChangeListener getImageChangeListener() {
+        return imageChangeListener;
+    }
 
-	@Override
-	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    public void setImageChangeListener(ImageChangeListener imageChangeListener) {
+        this.imageChangeListener = imageChangeListener;
+    }
 
-		int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-		int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-		int width = MeasureSpec.getSize(widthMeasureSpec);
-		int height = MeasureSpec.getSize(heightMeasureSpec);
+    private int imageWidth;
+    private int imageHeight;
 
-		/**
-		 * if both width and height are set scale width first. modify in future
-		 * if necessary
-		 */
+    public void setImageWidth(int w) {
+        imageWidth = w;
+    }
 
-		if (widthMode == MeasureSpec.EXACTLY
-				|| widthMode == MeasureSpec.AT_MOST) {
-			scaleToWidth = true;
-		} else if (heightMode == MeasureSpec.EXACTLY
-				|| heightMode == MeasureSpec.AT_MOST) {
-			scaleToWidth = false;
-		} else
-			throw new IllegalStateException(
-					"width or height needs to be set to match_parent or a specific dimension");
+    public void setImageHeight(int h) {
+        imageHeight = h;
+    }
 
-		if (getDrawable() == null || getDrawable().getIntrinsicWidth() == 0) {
-			// nothing to measure
-			super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-			return;
-		} else {
-			if (scaleToWidth) {
-				int iw = this.getDrawable().getIntrinsicWidth();
-				int ih = this.getDrawable().getIntrinsicHeight();
-				int heightC = width * ih / iw;
-				if (height > 0)
-					if (heightC > height) {
-						// dont let hegiht be greater then set max
-						heightC = height;
-						width = heightC * iw / ih;
-					}
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
-				this.setScaleType(ScaleType.CENTER_CROP);
-				setMeasuredDimension(width, heightC);
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
 
-			} else {
-				// need to scale to height instead
-				int marg = 0;
-				if (getParent() != null) {
-					if (getParent().getParent() != null) {
-						marg += ((RelativeLayout) getParent().getParent())
-								.getPaddingTop();
-						marg += ((RelativeLayout) getParent().getParent())
-								.getPaddingBottom();
-					}
-				}
+        /**
+         * if both width and height are set scale width first. modify in future
+         * if necessary
+         */
 
-				int iw = this.getDrawable().getIntrinsicWidth();
-				int ih = this.getDrawable().getIntrinsicHeight();
+        if (widthMode == MeasureSpec.EXACTLY || widthMode == MeasureSpec.AT_MOST) {
+            scaleToWidth = true;
+        } else if (heightMode == MeasureSpec.EXACTLY || heightMode == MeasureSpec.AT_MOST) {
+            scaleToWidth = false;
+        } else
+            throw new IllegalStateException("width or height needs to be set to match_parent or a specific dimension");
 
-				width = height * iw / ih;
-				height -= marg;
-				setMeasuredDimension(width, height);
-			}
+        if (imageWidth == 0) {
+            // nothing to measure
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            return;
+        } else {
+            if (scaleToWidth) {
+                int iw = imageWidth;
+                int ih = imageHeight;
+                int heightC = width * ih / iw;
+                if (height > 0)
+                    if (heightC > height) {
+                        // dont let hegiht be greater then set max
+                        heightC = height;
+                        width = heightC * iw / ih;
+                    }
 
-		}
-	}
+                this.setScaleType(ScaleType.CENTER_CROP);
+                setMeasuredDimension(width, heightC);
+
+            } else {
+                // need to scale to height instead
+                int marg = 0;
+                if (getParent() != null) {
+                    if (getParent().getParent() != null) {
+                        marg += ((RelativeLayout) getParent().getParent()).getPaddingTop();
+                        marg += ((RelativeLayout) getParent().getParent()).getPaddingBottom();
+                    }
+                }
+
+                int iw = imageWidth;
+                int ih = imageHeight;
+
+                width = height * iw / ih;
+                height -= marg;
+                setMeasuredDimension(width, height);
+            }
+
+        }
+    }
 
 }
