@@ -167,7 +167,6 @@ public class PullToRefreshSampleActivity extends FragmentActivity implements IXL
             }
 
             holder = (ViewHolder) convertView.getTag();
-            Log.d("TAGGGGGGGGGGGGG", "columnWidth:" + mListView.getColumnWidth());
             holder.imageView.setImageWidth(duitangInfo.getWidth());
             holder.imageView.setImageHeight(duitangInfo.getHeight());
             holder.contentView.setText(duitangInfo.getMsg());
